@@ -20,7 +20,7 @@ type car struct {
 }
 
 func main() {
-	c1 := newCar("Tesla", "Model 3", "abc-123", "New fancy sudan")
+	c1 := newCar("Tesla", "Model 3", "abc-123", "New fancy sedan")
 	c2 := newCar("Tesla", "Model X", "xyz-321", "Big X-Wing SUV")
 
 	var cars []car
