@@ -8,8 +8,10 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"log"
 	"net/http"
+	"net/http/httputil"
 	"os"
 )
 
@@ -29,9 +31,25 @@ func main() {
 
 	b := new(bytes.Buffer)
 	json.NewEncoder(b).Encode(c)
-	postURL := "https://requestb.in/1icjzd11"
-	log.Printf("Sending %s to %s", string(b.Bytes()), postURL)
-	res, _ := http.Post(postURL, "application/json", b)
+	postURL := "http://129.213.52.65:4000/cars"
 
+	client := &http.Client{}
+	req, _ := http.NewRequest("POST", postURL, b)
+	req.Header.Add("Content-Type", "application/json")
+	req.Header.Add("Owner", "Chad Arimura")
+
+	dump, err := httputil.DumpRequestOut(req, true)
+	if err != nil {
+		fmt.Println("error with dumprequest")
+		log.Fatal(err)
+	}
+	fmt.Println(string(dump))
+
+	res, err := client.Do(req)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	fmt.Println("Response --> " + res.Status)
 	defer res.Body.Close()
 }

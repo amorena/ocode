@@ -22,16 +22,25 @@ type car struct {
 	Condition    string `json:"condition"`
 }
 
+type cars struct {
+	Cars []car `json:"cars"`
+}
+
 func main() {
-	getURL := "http://dev.fnservice.io/r/devweek/get_cars_stub"
+	getURL := "http://129.213.52.65:4000/cars"
+	fmt.Println(getURL)
 	res, _ := http.Get(getURL)
 	defer res.Body.Close()
 
 	bodyBytes, _ := ioutil.ReadAll(res.Body)
 
-	var cars []car
+	fmt.Println(string(bodyBytes))
+
+	cars := new(cars)
+
 	json.Unmarshal(bodyBytes, &cars)
-	for k, v := range cars {
+
+	for k, v := range cars.Cars {
 		fmt.Printf("%v -> %v\n", k, v)
 	}
 }
