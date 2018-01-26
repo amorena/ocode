@@ -1,5 +1,9 @@
 /*
-Grab a car from a json payload and post as a sell (POST /cars) to the Blockchain
+Grab a car from a json payload and post as an owner transfer (POST /owner) on Blockchain
+The path is /cars/<carId>/owner
+
+header: Owner
+body: new_owner
 */
 package main
 
@@ -15,12 +19,8 @@ import (
 
 type car struct {
 	Plate        string `json:"plate"`
-	Color        string `json:"color"`
-	Model        string `json:"model"`
-	Manufacturer string `json:"manufacturer"`
-	Year         string `json:"year"`
-	Description  string `json:"description"`
-	Condition    string `json:"condition"`
+	CurrentOwner string `json:"current_owner"`
+	NewOwner     string `json:"new_owner"`
 }
 
 func main() {
@@ -29,12 +29,12 @@ func main() {
 
 	b := new(bytes.Buffer)
 	json.NewEncoder(b).Encode(c)
-	postURL := "http://129.213.52.65:4000/cars"
+	postURL := "http://129.213.52.65:4000/cars/" + c.Plate + "/owner"
 
 	client := &http.Client{}
-	req, _ := http.NewRequest("POST", postURL, b)
+	req, _ := http.NewRequest("PUT", postURL, b)
 	req.Header.Add("Content-Type", "application/json")
-	req.Header.Add("Owner", "Chad Arimura")
+	req.Header.Add("Owner", c.CurrentOwner)
 
 	dump, err := httputil.DumpRequestOut(req, true)
 	if err != nil {
