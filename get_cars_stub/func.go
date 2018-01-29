@@ -27,6 +27,7 @@ func main() {
 	cars = append(cars, *c1, *c2)
 
 	b, _ := json.Marshal(cars)
+	os.Stderr.Write(b)
 	os.Stdout.Write(b)
 }
 
