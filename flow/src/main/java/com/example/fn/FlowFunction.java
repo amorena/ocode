@@ -1,19 +1,41 @@
 package com.example.fn;
 
 import com.fnproject.fn.api.flow.Flow;
-import com.fnproject.fn.api.flow.Flows;
 import com.fnproject.fn.api.flow.FlowFuture;
-import com.fnproject.fn.api.RuntimeContext;
-import com.fnproject.fn.api.FnConfiguration;
-
-import com.fnproject.fn.api.flow.HttpMethod;
+import com.fnproject.fn.api.flow.Flows;
 import com.fnproject.fn.api.flow.HttpResponse;
 
+import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static com.fnproject.fn.api.flow.Flows.currentFlow;
+class CarsRequest {
+    public String search;
+}
 
+class Car implements Serializable {
+    public String plate;
+    public String color;
+    public String model;
+    public String manufacturer;
+    public String year;
+    public String description;
+    public String condition;
+
+}
+
+class Cars implements Serializable {
+    public List<Car> cars;
+
+}
+
+class CriminalResult implements Serializable {
+    String stuff;
+}
+
+class CarFaxResult implements Serializable {
+    String stuff;
+}
 
 public class FlowFunction {
     public void handleRequest() throws Exception {
@@ -22,44 +44,35 @@ public class FlowFunction {
 
         Flow fl = Flows.currentFlow();
 
-        FlowFuture<HttpResponse> p1 = fl.invokeFunction("devweek/process_car", HttpMethod.POST);
-        FlowFuture<HttpResponse> p2 = fl.invokeFunction("devweek/process_car", HttpMethod.POST);
-        FlowFuture<HttpResponse> p3 = fl.invokeFunction("devweek/process_car", HttpMethod.POST);
+        FlowFuture<Cars> cars = fl.invokeFunction("./get_cars", new CarsRequest(), Cars.class);
 
+        FlowFuture<Void> allTasks = cars.thenCompose((result) -> {
+            List<FlowFuture<Void>> results = new ArrayList<>();
 
-        // CURRENTLY DOING THIS
-        FlowFuture<HttpResponse> c1 = p1.thenCompose( msg -> {
-            return fl.invokeFunction("devweek/carfax", HttpMethod.POST);
+            // iterate over each car and run process_car -> (carfax && criminal_lookup)
+            for (Car car : result.cars) {
+                FlowFuture<HttpResponse> processCarResult = fl.invokeFunction("./process_car", car);
+
+                FlowFuture<Void> runChecksResult = processCarResult.thenCompose((ignored) -> {
+                    FlowFuture<?> carFax = fl.invokeFunction("./carfax", car);
+                    FlowFuture<?> criminal = fl.invokeFunction("./criminal_lookup", car);
+                    return fl.allOf(carFax,criminal);
+                });
+
+                FlowFuture<Void> cardDone = runChecksResult.thenAccept((ignored)->{
+                    System.err.println("finished processing " + car.plate );
+                });
+                results.add(cardDone);
+
+            }
+
+            return fl.allOf(results.toArray(new FlowFuture[results.size()]));
         });
-        FlowFuture<HttpResponse> c2 = p1.thenCompose( msg -> {
-            return fl.invokeFunction("devweek/criminal_lookup", HttpMethod.POST);
-        });
-        FlowFuture<HttpResponse> c3 = p2.thenCompose( msg -> {
-            return fl.invokeFunction("devweek/carfax", HttpMethod.POST);
-        });
-        FlowFuture<HttpResponse> c4 = p2.thenCompose( msg -> {
-            return fl.invokeFunction("devweek/criminal_lookup", HttpMethod.POST);
+
+        // Do something with all the results :
+        allTasks.thenAccept((ignored) -> {
+            System.err.println("Flow done");
         });
 
-        FlowFuture<HttpResponse> c5 = p3.thenCompose( msg -> {
-            return fl.invokeFunction("devweek/carfax", HttpMethod.POST);
-        });
-        FlowFuture<HttpResponse> c6 = p3.thenCompose( msg -> {
-            return fl.invokeFunction("devweek/criminal_lookup", HttpMethod.POST);
-        });
-
-        // WANT SOMETHING MORE LIKE THIS:
-        // Run process_car 5 times, for each one, run in parallel carfax and criminal_lookup
-
-        // FlowFuture<HttpResponse> c1 = p1.thenCompose( msg -> {
-        //     return currentFlow()
-        //         .allOf(fl.invokeFunction("devweek/carfax", HttpMethod.POST),
-        //                 fl.invokeFunction("devweek/criminal_lookup", HttpMethod.POST));
-        // });
-
-
-
-
-        System.out.println("ENDING FLOW");
     }
 }
