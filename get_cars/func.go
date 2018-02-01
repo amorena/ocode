@@ -5,6 +5,7 @@ the getcars func.
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"os"
 	"time"
@@ -24,15 +25,23 @@ type cars struct {
 }
 
 func main() {
+	time.Sleep(3 * time.Second)
 	c1 := newCar("Tesla", "Model 3", "2NOGA55", "New fancy sedan", "black")
 	c2 := newCar("Tesla", "Model X", "4PWR123", "Big X-Wing SUV", "red")
 	cars := &cars{
 		Cars: []car{*c1, *c2},
 	}
-
 	b, _ := json.Marshal(cars)
-	//os.Stderr.Write(b)
-	time.Sleep(3 * time.Second)
+
+	var buffer bytes.Buffer
+
+	buffer.WriteString("Found " + string(len(cars.Cars)) + "Cars:\n")
+
+	for _, c := range cars.Cars {
+		buffer.WriteString(c.Manufacturer + " " + c.Model + " - Plate: " + c.Plate + "\n")
+	}
+
+	os.Stderr.WriteString(buffer.String())
 	os.Stdout.Write(b)
 }
 
