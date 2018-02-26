@@ -26,8 +26,8 @@ type cars struct {
 
 func main() {
 	time.Sleep(3 * time.Second)
-	c1 := newCar("Tesla", "Model 3", "2NOGA55", "New fancy sedan", "black")
-	c2 := newCar("Tesla", "Model X", "4PWR123", "Big X-Wing SUV", "red")
+	c1 := newCar("Lexus", "LFA", "6LIK274", "Fancy Sedan", "white")
+	c2 := newCar("Lexus", "LFA", "4PWR123", "Definitely not a jalopy", "candy apple red")
 	cars := &cars{
 		Cars: []car{*c1, *c2},
 	}

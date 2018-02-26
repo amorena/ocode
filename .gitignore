@@ -1,2 +1,7 @@
 data/fn.db
 data/fn.mq
+flow/.classpath
+flow/.project
+flow/.settings/org.eclipse.core.resources.prefs
+flow/.settings/org.eclipse.jdt.core.prefs
+flow/.settings/org.eclipse.m2e.core.prefs
