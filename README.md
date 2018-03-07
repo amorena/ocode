@@ -22,11 +22,10 @@ few minutes as all required Docker images are pulled.
 
 ## Deploy and Configure the Application
 
-Run the following:
+Run the following to deploy all functions and
+configure them.
 
-1. `fn deploy --all --local`
-
-2. `./configure.sh`
+1. `./deploy.sh`
 
 ## Run the Function
 
